@@ -10,11 +10,11 @@ export default function Navigation() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/">
-            <a className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text">
+            <Button variant="link" className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text p-0">
               Web3 Jobs AI
-            </a>
+            </Button>
           </Link>
-          
+
           <div className="flex gap-4">
             <Link href="/jobs">
               <Button 
@@ -25,7 +25,7 @@ export default function Navigation() {
                 Jobs
               </Button>
             </Link>
-            
+
             <Link href="/profile">
               <Button 
                 variant={location === "/profile" ? "default" : "ghost"}
@@ -35,7 +35,7 @@ export default function Navigation() {
                 Profile
               </Button>
             </Link>
-            
+
             <Link href="/dashboard">
               <Button 
                 variant={location === "/dashboard" ? "default" : "ghost"}

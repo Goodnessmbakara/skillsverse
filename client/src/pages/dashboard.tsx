@@ -10,18 +10,15 @@ import { AlertCircle, Briefcase, Building2, Users } from "lucide-react";
 import { type User, type Job, type Match } from "@shared/schema";
 
 export default function Dashboard() {
-  // Fetch current user data
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
     queryKey: ["/api/users/1"], // TODO: Get from auth context
   });
 
-  // Fetch matches for the user
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useQuery<Match[]>({
     queryKey: [`/api/matches/user/${user?.id}`],
     enabled: !!user?.id,
   });
 
-  // Fetch jobs if employer
   const { data: postedJobs, isLoading: jobsLoading, error: jobsError } = useQuery<Job[]>({
     queryKey: [`/api/jobs`],
     enabled: user?.type === "employer",
@@ -68,11 +65,13 @@ export default function Dashboard() {
             Welcome back, {user.name}
           </p>
         </div>
-        <img
-          src={user.avatar}
-          alt={user.name}
-          className="w-16 h-16 rounded-full object-cover"
-        />
+        {user.avatar && (
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-16 h-16 rounded-full object-cover"
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

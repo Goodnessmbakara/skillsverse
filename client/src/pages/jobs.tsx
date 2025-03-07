@@ -8,9 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
-  const [blockchain, setBlockchain] = useState<string>("");
+  const [blockchain, setBlockchain] = useState<string>("all");
   const { toast } = useToast();
-  
+
   const { data: jobs, isLoading } = useQuery<Job[]>({
     queryKey: ["/api/jobs"],
   });
@@ -18,7 +18,7 @@ export default function Jobs() {
   const filteredJobs = jobs?.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(search.toLowerCase()) ||
                          job.company.toLowerCase().includes(search.toLowerCase());
-    const matchesBlockchain = !blockchain || job.blockchain === blockchain;
+    const matchesBlockchain = blockchain === "all" || job.blockchain === blockchain;
     return matchesSearch && matchesBlockchain;
   });
 
@@ -33,9 +33,9 @@ export default function Jobs() {
           status: "pending"
         })
       });
-      
+
       if (!res.ok) throw new Error("Failed to apply");
-      
+
       toast({
         title: "Application Submitted",
         description: "Your application has been sent successfully!"
@@ -52,7 +52,7 @@ export default function Jobs() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Web3 Jobs</h1>
-      
+
       <div className="flex gap-4 mb-8">
         <Input
           placeholder="Search jobs..."
@@ -60,13 +60,13 @@ export default function Jobs() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
-        
+
         <Select value={blockchain} onValueChange={setBlockchain}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Blockchain" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All Chains</SelectItem>
             <SelectItem value="sui">Sui</SelectItem>
             <SelectItem value="ethereum">Ethereum</SelectItem>
             <SelectItem value="solana">Solana</SelectItem>
