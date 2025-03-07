@@ -5,13 +5,13 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Job operations
   getJob(id: number): Promise<Job | undefined>;
   getAllJobs(): Promise<Job[]>;
   createJob(job: InsertJob): Promise<Job>;
   getJobsByEmployer(employerId: number): Promise<Job[]>;
-  
+
   // Match operations
   createMatch(match: InsertMatch): Promise<Match>;
   getMatchesByUser(userId: number): Promise<Match[]>;
@@ -48,7 +48,14 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = {
+      ...insertUser,
+      id,
+      bio: insertUser.bio ?? null,
+      skills: insertUser.skills ?? null,
+      experience: insertUser.experience ?? null,
+      avatar: insertUser.avatar ?? null,
+    };
     this.users.set(id, user);
     return user;
   }
@@ -63,7 +70,14 @@ export class MemStorage implements IStorage {
 
   async createJob(insertJob: InsertJob): Promise<Job> {
     const id = this.currentJobId++;
-    const job: Job = { ...insertJob, id };
+    const job: Job = {
+      ...insertJob,
+      id,
+      requirements: insertJob.requirements ?? null,
+      salary: insertJob.salary ?? null,
+      location: insertJob.location ?? null,
+      companyLogo: insertJob.companyLogo ?? null,
+    };
     this.jobs.set(id, job);
     return job;
   }
@@ -96,7 +110,7 @@ export class MemStorage implements IStorage {
   async updateMatchStatus(id: number, status: string): Promise<Match> {
     const match = this.matches.get(id);
     if (!match) throw new Error("Match not found");
-    
+
     const updatedMatch = { ...match, status };
     this.matches.set(id, updatedMatch);
     return updatedMatch;
