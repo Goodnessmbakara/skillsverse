@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { ArrowRight, Wallet, Brain, Building2, Trophy, Users } from "lucide-react";
 
 export default function Home() {
@@ -17,14 +17,14 @@ export default function Home() {
           </p>
 
           <div className="flex gap-4 justify-center mt-8">
-            <Link href="/jobs">
+            <Link to="/jobs">
               <Button size="lg" className="gap-2">
                 Browse Jobs
                 <ArrowRight size={20} />
               </Button>
             </Link>
 
-            <Link href="/profile">
+            <Link to="/login">
               <Button size="lg" variant="outline" className="gap-2">
                 <Wallet size={20} />
                 Connect Wallet
@@ -101,18 +101,18 @@ export default function Home() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Platform</h4>
               <ul className="space-y-2">
-                <li><Link href="/jobs">Browse Jobs</Link></li>
-                <li><Link href="/profile">Create Profile</Link></li>
-                <li><Link href="/dashboard">Dashboard</Link></li>
+                <li><Link to="/jobs">Browse Jobs</Link></li>
+                <li><Link to="/profile">Create Profile</Link></li>
+                <li><Link to="/dashboard">Dashboard</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-lg font-semibold mb-4">Resources</h4>
               <ul className="space-y-2">
-                <li><Link href="/learn">Learning Hub</Link></li>
-                <li><Link href="/docs">Documentation</Link></li>
-                <li><Link href="/help">Support</Link></li>
+                <li><Link to="/learn">Learning Hub</Link></li>
+                <li><Link to="/docs">Documentation</Link></li>
+                <li><Link to="/help">Support</Link></li>
               </ul>
             </div>
 

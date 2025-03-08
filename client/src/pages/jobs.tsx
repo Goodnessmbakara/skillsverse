@@ -1,50 +1,102 @@
 import { useQuery } from "@tanstack/react-query";
-import { type Job } from "@shared/schema";
-import JobCard from "@/components/job-card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import JobCard from "@/components/job-card";
+import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import WalletManager from '@/components/auth/WalletManager';
+import suiClient from "@/components/auth/suiClient";
+
+
+interface Job {
+  id: string;
+  title: string;
+  company: string; // employer address
+  description: string; // Walrus URL
+  blockchain: string;
+  salary: string; 
+  location: string; 
+}
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
   const [blockchain, setBlockchain] = useState<string>("all");
   const { toast } = useToast();
+  const address = WalletManager.getAddress();
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
   const { data: jobs, isLoading } = useQuery<Job[]>({
-    queryKey: ["/api/jobs"],
+    queryKey: ['jobs'],
+    queryFn: async () => {
+      const objects = await suiClient.getAllObjects({
+        options: { showContent: true },
+        filter: { StructType: '0xYourPackageId::marketplace::Job' },
+      });
+      return objects.data.map((obj) => {
+        const fields = obj.data?.content?.fields as any;
+        return {
+          id: obj.data?.objectId,
+          title: Buffer.from(fields.title).toString(),
+          company: fields.employer.slice(0, 6) + '...' + fields.employer.slice(-4), // Truncated address
+          description: Buffer.from(fields.description_url).toString(), // Walrus URL
+          blockchain: "sui", // Hardcoded for SkillsVerse
+          salary: `${parseInt(fields.payment.fields.value) / 1_000_000_000} SUI`,
+          location: "Remote", // Static for now
+        };
+      });
+    },
+    enabled: !!address,
   });
 
   const filteredJobs = jobs?.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(search.toLowerCase()) ||
-                         job.company.toLowerCase().includes(search.toLowerCase());
+      job.company.toLowerCase().includes(search.toLowerCase());
     const matchesBlockchain = blockchain === "all" || job.blockchain === blockchain;
     return matchesSearch && matchesBlockchain;
   });
 
-  const handleApply = async (jobId: number) => {
-    try {
-      const res = await fetch("/api/matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId,
-          userId: 1, // TODO: Get from auth context
-          status: "pending"
-        })
-      });
-
-      if (!res.ok) throw new Error("Failed to apply");
-
+  const handleApply = async (jobId: string) => { // Changed jobId to string
+    if (!address) {
       toast({
-        title: "Application Submitted",
-        description: "Your application has been sent successfully!"
+        variant: "destructive",
+        title: "Error",
+        description: "Please log in to apply for a job.",
       });
+      return;
+    }
+
+    try {
+      const tx = new TransactionBlock();
+      tx.moveCall({
+        target: '0xYourPackageId::marketplace::apply_for_job',
+        arguments: [tx.object(jobId)],
+      });
+
+      signAndExecute(
+        {
+          transactionBlock: tx,
+          account: { address },
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Application Submitted",
+              description: "Your application has been sent successfully!",
+            });
+          },
+          onError: (error) => {
+            throw error;
+          },
+        }
+      );
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to submit application. Please try again."
+        description: `Failed to submit application: ${error.message}`,
       });
     }
   };
@@ -76,7 +128,7 @@ export default function Jobs() {
 
       {isLoading ? (
         <div className="grid gap-4">
-          {[1,2,3].map(i => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="h-48 bg-card animate-pulse rounded-lg" />
           ))}
         </div>
@@ -86,10 +138,13 @@ export default function Jobs() {
             <JobCard
               key={job.id}
               job={job}
-              matchScore={Math.floor(Math.random() * 100)} // Mock score
+              matchScore={Math.floor(Math.random() * 40) + 60} // Mock score; replace with real logic later
               onApply={handleApply}
             />
           ))}
+          {(!filteredJobs || filteredJobs.length === 0) && (
+            <p className="text-muted-foreground">No jobs match your criteria.</p>
+          )}
         </div>
       )}
     </div>
