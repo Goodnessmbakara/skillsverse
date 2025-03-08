@@ -1,8 +1,8 @@
 import { generateNonce, generateRandomness } from '@mysten/zklogin';
 import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { ConnectedWallet } from '@mysten/dapp-kit';
-import suiClient from './suiClient';
 import WalletManager from './WalletManager';
+import suiClient from '@/lib/suiClients';
 
 class AuthServices {
   async initiateProviderLogin(redirectAfterLogin = '/dashboard', provider: 'google' | 'facebook' | 'twitch' = 'google') {
