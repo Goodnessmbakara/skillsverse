@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertJobSchema, insertMatchSchema } from "@shared/schema";
 import { z } from "zod";
+import axios from 'axios';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
@@ -92,6 +93,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Failed to update match status" });
       }
     }
+  });
+
+  // JWT VERIFICATION
+  // app.get('/auth/callback', async (req, res) => {
+  //   const { code } = req.query;
+  //   const redirectUri = process.env.REDIRECT_URL;
+  //   const clientId = process.env.CLIENT_ID;
+  //   const clientSecret = process.env.CLIENT_SECRET;
+  
+  //   // Exchange code for JWT
+  //   const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+  //     code,
+  //     client_id: clientId,
+  //     client_secret: clientSecret,
+  //     redirect_uri: redirectUri,
+  //     grant_type: 'authorization_code',
+  //   });
+  
+  //   const jwt = tokenResponse.data.id_token;
+  
+  //   // Fetch user-specific salt (e.g., from Mysten Labs' salt service)
+  //   const saltResponse = await axios.get('https://salt.api.mystenlabs.com/get-salt', {
+  //     headers: { Authorization: `Bearer ${jwt}` },
+  //   });
+  //   const salt = saltResponse.data.salt;
+  
+  //   // Generate ZKP (simplified; use a zkLogin library in production)
+  //   const zkp = 'mock-zkp'; // Replace with actual ZKP generation
+  
+  //   res.json({ jwt, salt, zkp });
+  // });
+
+  app.get('/auth/callback', (req, res) => {
+    const { code, provider } = req.query;
+    // Simulate JWT and salt (replace with real OAuth exchange in production)
+    const jwt = `mock-jwt-${provider}-${code}`;
+    const salt = 'mock-salt-12345678901234567890123456789012';
+    res.json({ jwt, salt });
   });
 
   const httpServer = createServer(app);
