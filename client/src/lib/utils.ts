@@ -15,11 +15,3 @@ export const getLoggedInAddress = () => {
   }
   return null;
 };
-
-export const uploadToWalrus = async (data: string): Promise<Uint8Array> => {
-  // Mock implementation
-  return new TextEncoder().encode(`https://walrus.storage/${encodeURIComponent(data)}`);
-  // Real implementation (future):
-  // const response = await fetch('https://walrus-api/storage', { method: 'POST', body: data });
-  // return new TextEncoder().encode(response.url);
-};
