@@ -1,24 +1,43 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Briefcase, User, LayoutDashboard, Wallet } from "lucide-react";
+import { Briefcase, User, LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { ConnectModal, useCurrentWallet } from '@mysten/dapp-kit';
+import WalletManager from './auth/WalletManager';
+import AuthServices from './auth/AuthServices';
+import WalletBalance from './WalletBalance';
+
+import Logo from '@/assets/generated-icon.png';
 
 export default function Navigation() {
-  const [location] = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isConnected, currentWallet, connect } = useCurrentWallet();
+  const isAuthenticated = AuthServices.isAuthenticated();
+
+  // Handle wallet connection
+  if (isConnected && currentWallet && !WalletManager.getAddress()) {
+    WalletManager.processWalletLogin(currentWallet);
+    AuthServices.initiateWalletLogin();
+  }
 
   return (
     <nav className="border-b border-border bg-card">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/">
-            <Button variant="link" className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text p-0">
+          <Link to="/">
+            <Button
+              variant="link"
+              className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text p-0"
+            >
+              <img src={Logo} alt="" className='w-10 lg:w-20'/>
               SkillsVerse
             </Button>
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link href="/jobs">
-              <Button 
-                variant={location === "/jobs" ? "default" : "ghost"}
+            <Link to="/jobs">
+              <Button
+                variant={location.pathname === "/jobs" ? "default" : "ghost"}
                 className="gap-2"
               >
                 <Briefcase size={20} />
@@ -26,9 +45,9 @@ export default function Navigation() {
               </Button>
             </Link>
 
-            <Link href="/profile">
-              <Button 
-                variant={location === "/profile" ? "default" : "ghost"}
+            <Link to="/profile">
+              <Button
+                variant={location.pathname === "/profile" ? "default" : "ghost"}
                 className="gap-2"
               >
                 <User size={20} />
@@ -36,9 +55,9 @@ export default function Navigation() {
               </Button>
             </Link>
 
-            <Link href="/dashboard">
-              <Button 
-                variant={location === "/dashboard" ? "default" : "ghost"}
+            <Link to="/dashboard">
+              <Button
+                variant={location.pathname === "/dashboard" ? "default" : "ghost"}
                 className="gap-2"
               >
                 <LayoutDashboard size={20} />
@@ -46,10 +65,7 @@ export default function Navigation() {
               </Button>
             </Link>
 
-            <Button variant="outline" className="gap-2">
-              <Wallet size={20} />
-              Connect Wallet
-            </Button>
+            <WalletBalance />
           </div>
         </div>
       </div>
