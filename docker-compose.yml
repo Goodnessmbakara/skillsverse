@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  client:
+    image: icekidtech/client:latest
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+  server:
+    image: icekidtech/server:latest
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=database
+    depends_on:
+      - database
+
+  database:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  skillsverse:
+    image: icekidtech/skillsverse:latest
+    build: ./skillsverse
+    environment:
+      - NETWORK=localhost
+    depends_on:
+      - server
+
+volumes:
+  db-data:
