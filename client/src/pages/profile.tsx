@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import WalletManager from '@/components/auth/WalletManager';
 import { Transaction } from '@mysten/sui/transactions';
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
-import suiClient from "@/components/auth/suiClient";
+import suiClient from "@/lib/suiClients";
+import { Buffer } from 'buffer';
+import { uploadToWalrus } from "@/lib/walrus";
 
 // Define schema (simplified for blockchain)
 const profileSchema = z.object({
@@ -21,8 +23,6 @@ const profileSchema = z.object({
   type: z.enum(["candidate", "employer"]),
   skills: z.record(z.number().min(0).max(100)), // e.g., { "Rust": 80 }
 });
-
-// const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
 
 const AVATAR_OPTIONS = [
   "https://images.unsplash.com/photo-1507679799987-c73779587ccf",
@@ -93,17 +93,12 @@ export default function Profile() {
     fetchData();
   }, [address, form]);
 
-  // Simulate Walrus upload (replace with real API later)
-  const uploadToWalrus = async (data: string): Promise<Uint8Array> => {
-    // Mock URL; integrate Walrus API in production
-    return new TextEncoder().encode(`https://walrus.storage/${encodeURIComponent(data)}`);
-  };
 
   const onSubmit = async (data: any) => {
     try {
       if (!address) throw new Error('Not authenticated');
 
-      const bioUrl = await uploadToWalrus(data.bio || "No bio provided");
+      const bioUrl = await uploadToWalrus(data.bio || "No bio provided", "0xYourPackageId::storage::certify_blob", address);
       const avatarUrl = new TextEncoder().encode(data.avatar);
 
       const tx = new Transaction();

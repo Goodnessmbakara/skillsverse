@@ -7,7 +7,6 @@ import MatchScore from "@/components/match-score";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Briefcase, Building2, Users } from "lucide-react";
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import WalletManager from '@/components/auth/WalletManager';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,10 +17,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { useSignAndExecuteTransactionBlock } from '@mysten/dapp-kit';
-import { deploySkillsVerseContract } from '@/utils/deployContract'; // Import the deployment function
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 
-const client = new SuiClient({ url: getFullnodeUrl('testnet') }); // Change to 'mainnet' for production
+// Import the deployment function
+import { deploySkillsVerseContract } from "@/lib/deployContract";
+import suiClient from "@/lib/suiClients";
 
 interface Profile { id: string; owner: string; skills: Record<string, number>; reputation: number; type: string; }
 interface Job { id: string; employer: string; title: string; description_url: string; payment: number; freelancer?: string; completed: boolean; }
@@ -36,13 +36,13 @@ const jobSchema = z.object({
 export default function Dashboard() {
   const address = WalletManager.getAddress();
   const { toast } = useToast();
-  const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery<Profile>({
     queryKey: ['profile', address],
     queryFn: async () => {
       if (!address) throw new Error('Not authenticated');
-      const objects = await client.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Profile' } });
+      const objects = await suiClient.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Profile' } });
       if (!objects.data.length) throw new Error('Profile not found');
       const profile = objects.data[0].data?.content?.fields as any;
       return {
@@ -68,7 +68,7 @@ export default function Dashboard() {
   const { data: allJobs, isLoading: allJobsLoading } = useQuery<Job[]>({
     queryKey: ['allJobs'],
     queryFn: async () => {
-      const objects = await client.getAllObjects({ options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Job' } });
+      const objects = await suiClient.getAllObjects({ options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Job' } });
       return objects.data.map((obj) => {
         const fields = obj.data?.content?.fields as any;
         return {
@@ -88,7 +88,7 @@ export default function Dashboard() {
   const { data: postedJobs, isLoading: jobsLoading, error: jobsError } = useQuery<Job[]>({
     queryKey: ['postedJobs', address],
     queryFn: async () => {
-      const objects = await client.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Job' } });
+      const objects = await suiClient.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0xYourPackageId::marketplace::Job' } });
       return objects.data.map((obj) => {
         const fields = obj.data?.content?.fields as any;
         return {
@@ -138,7 +138,7 @@ export default function Dashboard() {
   const { data: kiosk, isLoading: kioskLoading } = useQuery<any>({
     queryKey: ['kiosk', address],
     queryFn: async () => {
-      const objects = await client.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0x2::kiosk::Kiosk' } });
+      const objects = await suiClient.getOwnedObjects({ owner: address, options: { showContent: true }, filter: { StructType: '0x2::kiosk::Kiosk' } });
       if (!objects.data.length) return null;
       return { id: objects.data[0].data?.objectId };
     },

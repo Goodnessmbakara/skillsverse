@@ -4,11 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import JobCard from "@/components/job-card";
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import WalletManager from '@/components/auth/WalletManager';
-import suiClient from "@/components/auth/suiClient";
 
 
 interface Job {
@@ -58,7 +56,7 @@ export default function Jobs() {
     return matchesSearch && matchesBlockchain;
   });
 
-  const handleApply = async (jobId: string) => { // Changed jobId to string
+  const handleApply = async (jobId: string) => {
     if (!address) {
       toast({
         variant: "destructive",
