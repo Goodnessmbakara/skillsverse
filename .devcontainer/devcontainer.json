@@ -1,0 +1,14 @@
+{
+    "name": "Sui Skillsverse",
+    "image": "mysten/sui-tools:e98395de96e1651398df877ab743c673580e0422",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "move.move-analyzer"
+            ]
+        }
+    }
+}
