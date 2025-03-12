@@ -9,9 +9,8 @@ module skillsverse::credential_validation {
     // === Structs ===
 
     /// Represents a user's credential stored on-chain.
-    /// This is the core data structure for credential validation.
     struct Credential has key, store {
-        id: UID,               // Unique identifier for this credential, generated on-chain
+        id: UID,               // Unique identifier for this credential
         owner: address,        // The wallet address of the user who submitted the credential
         cred_type: vector<u8>, // The type or category of the credential (e.g., "SoftwareEngineer")
         data_hash: vector<u8>, // Cryptographic hash of the credential document (e.g., SHA-256 of PDF)
@@ -19,19 +18,21 @@ module skillsverse::credential_validation {
         issuer: vector<u8>,    // The entity that issued the credential (e.g., "UniversityX")
     }
 
-    /// Admin capability to restrict verification updates to trusted parties (e.g., oracle).
+    /// Admin capability to restrict verification updates to trusted parties.
     struct AdminCap has key { id: UID }
 
     // === Constants ===
 
     /// Error codes for better debugging and handling
-    const E_NOT_ADMIN: u64 = 1;     // Caller is not an admin/oracle
-    const E_ALREADY_VERIFIED: u64 = 2; // Credential is already verified
+    const E_NOT_ADMIN: u64 = 1;          // Caller is not an admin/oracle (unused but kept for clarity)
+    const E_ALREADY_VERIFIED: u64 = 2;   // Credential is already verified
+    const E_INVALID_CRED_TYPE: u64 = 3;  // Credential type is empty
+    const E_INVALID_DATA_HASH: u64 = 4;  // Data hash is empty
+    const E_INVALID_ISSUER: u64 = 5;     // Issuer is empty
 
     // === Initialization ===
 
     /// Initialize the contract by creating an AdminCap for the deployer.
-    /// This runs once when the contract is published.
     fun init(ctx: &mut TxContext) {
         let admin_cap = AdminCap { id: object::new(ctx) };
         transfer::transfer(admin_cap, tx_context::sender(ctx));
@@ -40,16 +41,17 @@ module skillsverse::credential_validation {
     // === Public Functions ===
 
     /// Allows a user to submit a new credential for verification.
-    /// - `cred_type`: The skill or category (e.g., "SoftwareEngineer").
-    /// - `data_hash`: Hash of the credential document (provided off-chain).
-    /// - `issuer`: The issuing entity (e.g., "UniversityX").
-    /// The credential starts unverified and is owned by the sender.
     public entry fun submit_credential(
         cred_type: vector<u8>,
         data_hash: vector<u8>,
         issuer: vector<u8>,
         ctx: &mut TxContext
     ) {
+        // Validate inputs are non-empty
+        assert!(std::vector::length(&cred_type) > 0, E_INVALID_CRED_TYPE);
+        assert!(std::vector::length(&data_hash) > 0, E_INVALID_DATA_HASH);
+        assert!(std::vector::length(&issuer) > 0, E_INVALID_ISSUER);
+
         let credential = Credential {
             id: object::new(ctx),           // Generate a unique ID
             owner: tx_context::sender(ctx), // Auto-capture the user's address
@@ -61,19 +63,13 @@ module skillsverse::credential_validation {
         transfer::transfer(credential, tx_context::sender(ctx)); // Send to user
     }
 
-    /// Allows an admin (oracle) to verify a credential.
-    /// - `credential`: The credential object to verify.
-    /// - `admin`: The AdminCap proving the caller is authorized.
-    /// Only flips `verified` to true if it’s currently false.
+    /// Allows an admin to verify a credential.
     public entry fun verify_credential(
         credential: &mut Credential,
-        admin: &AdminCap,
+        _admin: &AdminCap,  // Ownership enforced by Sui runtime
         ctx: &mut TxContext
     ) {
-        // Ensure the caller has the AdminCap (oracle privilege)
-        assert!(object::id(admin) == object::uid_to_inner(&admin.id), E_NOT_ADMIN);
-        
-        // Prevent re-verification of an already verified credential
+        // Prevent re-verification
         assert!(!credential.verified, E_ALREADY_VERIFIED);
         
         // Mark the credential as verified
@@ -82,22 +78,22 @@ module skillsverse::credential_validation {
 
     // === Helper Functions (View) ===
 
-    /// Returns whether a credential is verified (for off-chain use).
+    /// Returns whether a credential is verified.
     public fun is_verified(credential: &Credential): bool {
         credential.verified
     }
 
-    /// Returns the owner of a credential (for off-chain checks).
+    /// Returns the owner of a credential.
     public fun get_owner(credential: &Credential): address {
         credential.owner
     }
 
-    /// Returns the credential type (for filtering/matching).
+    /// Returns the credential type.
     public fun get_cred_type(credential: &Credential): vector<u8> {
         credential.cred_type
     }
 
-    /// Returns the issuer of the credential (for trust verification).
+    /// Returns the issuer of the credential.
     public fun get_issuer(credential: &Credential): vector<u8> {
         credential.issuer
     }
