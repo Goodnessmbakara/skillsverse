@@ -1,7 +1,7 @@
 [package]
 name = "SkillsVerse"
 version = "0.0.1"
-edition = "legacy"  # Matches Sui 1.43.1 default; change to "2024" if preferred
+edition = "legacy"  # Matches Sui 1.43.1 default
 
 [addresses]
 skillsverse = "0xe1b31ab636e598e2b88b62622247fd13f684022a6725a8bb73bf3f9202b42556"
@@ -9,9 +9,3 @@ skillsverse = "0xe1b31ab636e598e2b88b62622247fd13f684022a6725a8bb73bf3f9202b4255
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "sui_v1.43.1_1740174189_release" }
 MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "sui_v1.43.1_1740174189_release" }
-
-[sources]
-verify_credential = "sources/verify_credential.move"
-credential_minting = "sources/credential_minting.move"
-job_matching = "sources/job_matching.move"
-marketplace = "sources/marketplace.move"
