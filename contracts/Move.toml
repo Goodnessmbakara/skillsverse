@@ -14,3 +14,4 @@ MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/s
 verify_credential = "sources/verify_credential.move"
 credential_minting = "sources/credential_minting.move"
 job_matching = "sources/job_matching.move"
+marketplace = "sources/marketplace.move"
