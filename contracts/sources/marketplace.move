@@ -1,59 +1,61 @@
 // Targeting Sui 1.43.1
 module skillsverse::marketplace {
-    use sui::object::{Self, UID};
+    use sui::object::{Self, UID, ID}; // Added ID for event fields
     use sui::transfer;
-    use sui::coin::{Self, Coin, Balance};
+    use sui::coin::{Self, Coin};
+    use sui::balance::{Self, Balance}; // Corrected import for Balance
     use sui::sui::SUI;
     use sui::tx_context::{Self, TxContext};
     use sui::vec_map::{Self, VecMap};
-    use sui::option::{Self, Option};
+    use std::option::{Self, Option}; // Corrected to std::option
+    use std::vector; // Added for vector operations
     use sui::kiosk::{Self, Kiosk, KioskOwnerCap};
     use sui::event;
-    use sui::transfer_policy::{Self, TransferPolicy, TransferPolicyCap};
+    use sui::transfer_policy::{Self, TransferPolicy};
     use sui::package;
 
-    const ENotOwner: u64 = 0;
-    const EJobAlreadyCompleted: u64 = 1;
-    const ENoFreelancer: u64 = 2;
-    const EAlreadyApplied: u64 = 3;
-    const EInsufficientPayment: u64 = 4;
-    const ENotCandidate: u64 = 5;
+    const E_NOT_OWNER: u64 = 0;
+    const E_JOB_ALREADY_COMPLETED: u64 = 1;
+    const E_NO_FREELANCER: u64 = 2;
+    const E_ALREADY_APPLIED: u64 = 3;
+    const E_INSUFFICIENT_PAYMENT: u64 = 4;
+    const E_NOT_CANDIDATE: u64 = 5;
 
-    // Events (no 'public' modifier in legacy edition)
+    // Events
     struct ProfileCreated has copy, drop {
-        profile_id: address,
+        profile_id: ID, // Changed to ID for consistency
         owner: address,
         type: vector<u8>,
     }
 
     struct ProfileUpdated has copy, drop {
-        profile_id: address,
+        profile_id: ID, // Changed to ID
         owner: address,
     }
 
     struct JobPosted has copy, drop {
-        job_id: address,
+        job_id: ID, // Changed to ID
         employer: address,
         title: vector<u8>,
         payment: u64,
     }
 
     struct JobApplied has copy, drop {
-        job_id: address,
+        job_id: ID, // Changed to ID
         freelancer: address,
     }
 
     struct JobCompleted has copy, drop {
-        job_id: address,
+        job_id: ID, // Changed to ID
         freelancer: address,
-        nft_id: address,
+        nft_id: ID, // Changed to ID
         payment: u64,
     }
 
     // One-Time Witness for package initialization
     struct MARKETPLACE has drop {}
 
-    // Structs (no 'public' modifier in legacy edition)
+    // Structs
     struct Profile has key, store {
         id: UID,
         owner: address,
@@ -70,14 +72,14 @@ module skillsverse::marketplace {
         employer: address,
         title: vector<u8>,
         description_url: vector<u8>,
-        payment: Balance<SUI>, // Using Balance for efficiency (compatible with 1.43.1)
+        payment: Balance<SUI>,
         freelancer: Option<address>,
         completed: bool,
     }
 
     struct CompletionNFT has key, store {
         id: UID,
-        job_id: address,
+        job_id: ID, // Changed to ID
         title: vector<u8>,
     }
 
@@ -90,13 +92,13 @@ module skillsverse::marketplace {
         transfer::public_share_object(transfer_policy);
     }
 
-    // Create a profile (entry function with vector workaround for VecMap)
+    // Create a profile
     public entry fun create_profile(
         name: vector<u8>,
         bio_url: vector<u8>,
         avatar_url: vector<u8>,
-        skills_keys: vector<vector<u8>>, // VecMap split into keys
-        skills_values: vector<u8>,       // VecMap split into values
+        skills_keys: vector<vector<u8>>,
+        skills_values: vector<u8>,
         type: vector<u8>,
         ctx: &mut TxContext
     ) {
@@ -116,12 +118,12 @@ module skillsverse::marketplace {
             reputation: 0,
             type,
         };
-        let profile_id = object::uid_to_address(&profile.id);
+        let profile_id = object::uid_to_inner(&profile.id); // Use ID type
         event::emit(ProfileCreated { profile_id, owner: profile.owner, type });
         transfer::transfer(profile, tx_context::sender(ctx));
     }
 
-    // Update a profile (entry function with vector workaround)
+    // Update a profile
     public entry fun update_profile(
         profile: &mut Profile,
         name: vector<u8>,
@@ -132,7 +134,7 @@ module skillsverse::marketplace {
         type: vector<u8>,
         ctx: &mut TxContext
     ) {
-        assert!(profile.owner == tx_context::sender(ctx), ENotOwner);
+        assert!(profile.owner == tx_context::sender(ctx), E_NOT_OWNER);
         let skills = vec_map::empty();
         let i = 0;
         while (i < vector::length(&skills_keys)) {
@@ -144,17 +146,17 @@ module skillsverse::marketplace {
         profile.avatar_url = avatar_url;
         profile.skills = skills;
         profile.type = type;
-        event::emit(ProfileUpdated { profile_id: object::uid_to_address(&profile.id), owner: profile.owner });
+        event::emit(ProfileUpdated { profile_id: object::uid_to_inner(&profile.id), owner: profile.owner });
     }
 
-    // Post a job (accepts Coin, converts to Balance)
+    // Post a job
     public entry fun post_job(
         title: vector<u8>,
         description_url: vector<u8>,
         payment_coin: Coin<SUI>,
         ctx: &mut TxContext
     ) {
-        assert!(coin::value(&payment_coin) >= 100_000_000, EInsufficientPayment); // 0.1 SUI minimum
+        assert!(coin::value(&payment_coin) >= 100_000_000, E_INSUFFICIENT_PAYMENT); // 0.1 SUI minimum
         let payment = coin::into_balance(payment_coin);
         let job = Job {
             id: object::new(ctx),
@@ -165,8 +167,8 @@ module skillsverse::marketplace {
             freelancer: option::none(),
             completed: false,
         };
-        let job_id = object::uid_to_address(&job.id);
-        event::emit(JobPosted { job_id, employer: job.employer, title, payment: coin::balance_value(&job.payment) });
+        let job_id = object::uid_to_inner(&job.id);
+        event::emit(JobPosted { job_id, employer: job.employer, title, payment: balance::value(&job.payment) });
         transfer::transfer(job, tx_context::sender(ctx));
     }
 
@@ -176,12 +178,12 @@ module skillsverse::marketplace {
         profile: &Profile,
         ctx: &mut TxContext
     ) {
-        assert!(profile.type == b"candidate", ENotCandidate);
-        assert!(option::is_none(&job.freelancer), EAlreadyApplied);
-        assert!(!job.completed, EJobAlreadyCompleted);
+        assert!(profile.type == b"candidate", E_NOT_CANDIDATE);
+        assert!(option::is_none(&job.freelancer), E_ALREADY_APPLIED);
+        assert!(!job.completed, E_JOB_ALREADY_COMPLETED);
         let freelancer = tx_context::sender(ctx);
         job.freelancer = option::some(freelancer);
-        event::emit(JobApplied { job_id: object::uid_to_address(&job.id), freelancer });
+        event::emit(JobApplied { job_id: object::uid_to_inner(&job.id), freelancer });
     }
 
     // Complete a job and issue an NFT
@@ -193,22 +195,22 @@ module skillsverse::marketplace {
         _policy: &TransferPolicy<CompletionNFT>,
         ctx: &mut TxContext
     ) {
-        assert!(job.employer == tx_context::sender(ctx), ENotOwner);
-        assert!(option::is_some(&job.freelancer), ENoFreelancer);
-        assert!(!job.completed, EJobAlreadyCompleted);
+        assert!(job.employer == tx_context::sender(ctx), E_NOT_OWNER);
+        assert!(option::is_some(&job.freelancer), E_NO_FREELANCER);
+        assert!(!job.completed, E_JOB_ALREADY_COMPLETED);
 
         let freelancer = option::extract(&mut job.freelancer);
         job.completed = true;
 
-        let payment_coin = coin::from_balance(job.payment, ctx);
+        let payment_coin = coin::from_balance<SUI>(job.payment, ctx); // Explicit type annotation
         transfer::public_transfer(payment_coin, freelancer);
 
         let nft = CompletionNFT {
             id: object::new(ctx),
-            job_id: object::uid_to_address(&job.id),
+            job_id: object::uid_to_inner(&job.id),
             title: job.title,
         };
-        let nft_id = object::uid_to_address(&nft.id);
+        let nft_id = object::uid_to_inner(&nft.id);
         kiosk::place(kiosk, cap, nft);
 
         if (profile.owner == freelancer) {
@@ -216,10 +218,10 @@ module skillsverse::marketplace {
         };
 
         event::emit(JobCompleted {
-            job_id: object::uid_to_address(&job.id),
+            job_id: object::uid_to_inner(&job.id),
             freelancer,
             nft_id,
-            payment: coin::balance_value(&job.payment)
+            payment: balance::value(&job.payment) // Use stored Balance value
         });
     }
 

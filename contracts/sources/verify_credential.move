@@ -3,8 +3,8 @@ module skillsverse::credential_validation {
     // Import necessary Sui modules
     use sui::object::{Self, UID};           // For unique IDs and object management
     use sui::transfer;                      // For transferring ownership of objects
-    use sui::tx_context::{Self, TxContext}; // For transaction metadata (e.g., sender address)
-    use sui::vec_map::{Self, VecMap};      // For mapping credential types to indices (optional)
+    use sui::tx_context::{TxContext};       // For transaction metadata (e.g., sender address)
+    // Removed unused sui::vec_map import since VecMap isn't used
 
     // === Structs ===
 
@@ -24,7 +24,7 @@ module skillsverse::credential_validation {
     // === Constants ===
 
     /// Error codes for better debugging and handling
-    const E_NOT_ADMIN: u64 = 1;          // Caller is not an admin/oracle (unused but kept for clarity)
+    // Removed E_NOT_ADMIN since it’s unused; kept others for functionality
     const E_ALREADY_VERIFIED: u64 = 2;   // Credential is already verified
     const E_INVALID_CRED_TYPE: u64 = 3;  // Credential type is empty
     const E_INVALID_DATA_HASH: u64 = 4;  // Data hash is empty
@@ -48,31 +48,29 @@ module skillsverse::credential_validation {
         ctx: &mut TxContext
     ) {
         // Validate inputs are non-empty
-        assert!(std::vector::length(&cred_type) > 0, E_INVALID_CRED_TYPE);
-        assert!(std::vector::length(&data_hash) > 0, E_INVALID_DATA_HASH);
-        assert!(std::vector::length(&issuer) > 0, E_INVALID_ISSUER);
+        assert!(vector::length(&cred_type) > 0, E_INVALID_CRED_TYPE);
+        assert!(vector::length(&data_hash) > 0, E_INVALID_DATA_HASH);
+        assert!(vector::length(&issuer) > 0, E_INVALID_ISSUER);
 
         let credential = Credential {
-            id: object::new(ctx),           // Generate a unique ID
-            owner: tx_context::sender(ctx), // Auto-capture the user's address
-            cred_type,                      // Store the credential type
-            data_hash,                      // Store the document hash
-            verified: false,                // Initially unverified
-            issuer                          // Store the issuer
+            id: object::new(ctx),
+            owner: tx_context::sender(ctx),
+            cred_type,
+            data_hash,
+            verified: false,
+            issuer
         };
-        transfer::transfer(credential, tx_context::sender(ctx)); // Send to user
+        transfer::transfer(credential, tx_context::sender(ctx));
     }
 
     /// Allows an admin to verify a credential.
     public entry fun verify_credential(
         credential: &mut Credential,
         _admin: &AdminCap,  // Ownership enforced by Sui runtime
-        ctx: &mut TxContext
+        _ctx: &mut TxContext // Prefixed with _ since it’s unused but required for entry function
     ) {
         // Prevent re-verification
         assert!(!credential.verified, E_ALREADY_VERIFIED);
-        
-        // Mark the credential as verified
         credential.verified = true;
     }
 

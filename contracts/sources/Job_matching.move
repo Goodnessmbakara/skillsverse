@@ -2,12 +2,12 @@ module skillsverse::job_matching {
     // Import necessary Sui modules
     use sui::object::{Self, UID, ID};
     use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::TxContext; // Removed 'Self' since it’s unused
     use sui::event;
 
     // Struct to represent a job reference (shared object)
     struct JobReference has key {
-        id: UID,             // Unique identifier for the job reference
+        id: UID,              // Unique identifier for the job reference
         job_hash: vector<u8>, // Hash of the job data for integrity
         platform: vector<u8>, // Name of the platform posting the job
     }
