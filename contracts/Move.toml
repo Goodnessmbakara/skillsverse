@@ -4,8 +4,8 @@ version = "0.0.1"
 edition = "legacy"  # Matches Sui 1.43.1 default
 
 [addresses]
-skillsverse = "0xe1b31ab636e598e2b88b62622247fd13f684022a6725a8bb73bf3f9202b42556"
+marketplace = "0x0"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "sui_v1.43.1_1740174189_release" }
+skillsverse = { local = "/workspaces/skillsverse/contracts/build/skillsverse" }Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "sui_v1.43.1_1740174189_release" }
 MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "sui_v1.43.1_1740174189_release" }
