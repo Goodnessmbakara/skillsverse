@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Wallet, Brain, Building2, Trophy, Users, Blocks, Code, UserCheck, Sparkles, GraduationCap, Shield } from "lucide-react";
 // import { motion } from "framer-motion";
-import { motion } from 'motion/react'
+import { motion } from 'motion/react';
+import AuthServices from '@/components/auth/AuthServices'; // Add this import
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -11,6 +12,9 @@ const fadeIn = {
 };
 
 export default function Home() {
+  // Check if user is authenticated
+  const isAuthenticated = AuthServices.isAuthenticated();
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section with animated background */}
@@ -47,12 +51,24 @@ export default function Home() {
                 </Button>
               </Link>
 
-              <Link to="/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
-                  <Wallet size={20} />
-                  Connect Wallet
-                </Button>
-              </Link>
+              {/* Conditionally render the Connect Wallet button */}
+              {!isAuthenticated && (
+                <Link to="/login">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
+                    <Wallet size={20} />
+                    Connect Wallet
+                  </Button>
+                </Link>
+              )}
+
+              {/* Optionally show a dashboard button for authenticated users */}
+              {isAuthenticated && (
+                <Link to="/dashboard">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
