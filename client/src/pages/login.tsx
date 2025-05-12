@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ConnectButton, useCurrentWallet } from '@mysten/dapp-kit';
 import WalletManager from '@/components/auth/WalletManager';
 import { toast } from '@/hooks/use-toast';
+import suiClient from "@/lib/suiClients";
 
 function Login() {
     const navigate = useNavigate();
@@ -18,15 +19,50 @@ function Login() {
         lastEvent: null,
     });
 
+    // Check if user has a profile
+    const checkUserProfile = async (address: string) => {
+        try {
+            const objects = await suiClient.getOwnedObjects({
+                owner: address,
+                options: { showContent: true },
+                filter: { StructType: '0xYourPackageId::marketplace::Profile' }
+            });
+            
+            return objects.data.length > 0;
+        } catch (error) {
+            console.error('Error checking profile:', error);
+            return false;
+        }
+    };
+
     // Handle wallet connection
     useEffect(() => {
         if (isConnected && currentWallet) {
             WalletManager.processWalletLogin(currentWallet);
             AuthServices.initiateWalletLogin();
-
-            navigate('/dashboard');
+            
+            const address = currentWallet.accounts[0]?.address;
+            if (address) {
+                // Check if user has a profile before redirecting
+                checkUserProfile(address).then(hasProfile => {
+                    if (hasProfile) {
+                        navigate('/dashboard');
+                    } else {
+                        navigate('/profile');
+                    }
+                });
+            }
         } else if (WalletManager.isAuthenticated()) {
-            navigate('/dashboard');
+            const address = WalletManager.getAddress();
+            if (address) {
+                checkUserProfile(address).then(hasProfile => {
+                    if (hasProfile) {
+                        navigate('/dashboard');
+                    } else {
+                        navigate('/profile');
+                    }
+                });
+            }
         }
     }, [isConnected, currentWallet, navigate]);
 
