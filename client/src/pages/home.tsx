@@ -311,11 +311,24 @@ export default function Home() {
               Join thousands of professionals building the future of the decentralized web.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={'/login'}>
-                <Button size="lg" className="w-full sm:w-auto">
-                  Sign Up Now
-                </Button>
-              </Link>
+              {/* Only show Sign Up button if not authenticated */}
+              {!isAuthenticated && (
+                <Link to={'/login'}>
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Sign Up Now
+                  </Button>
+                </Link>
+              )}
+              
+              {/* Show a different button for authenticated users */}
+              {isAuthenticated && (
+                <Link to={'/dashboard'}>
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              )}
+              
               <Link to={'/learn-more'}>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   Learn More
