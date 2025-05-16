@@ -64,8 +64,8 @@ export default function Profile() {
         options: { showContent: true },
         // filter: { StructType: '0xYourPackageId::marketplace::Profile' },
       });
-      if (objects.data.length) {
-        const profile = objects.data[0].data?.content?.fields as any;
+      if (objects.data.length && objects.data[0].data?.content?.dataType === 'moveObject') {
+        const profile = objects.data[0].data.content.fields as any;
         setExistingProfile({
           id: objects.data[0].data?.objectId,
           name: Buffer.from(profile.name).toString(),
@@ -98,7 +98,17 @@ export default function Profile() {
     try {
       if (!address) throw new Error('Not authenticated');
 
-      const bioUrl = await uploadToWalrus(data.bio || "No bio provided", "0xYourPackageId::storage::certify_blob", address);
+      const bioUrl = await uploadToWalrus(
+        data.bio || "No bio provided", 
+        ({ transactionBlock }) => {
+          transactionBlock.moveCall({
+            target: "0xYourPackageId::storage::certify_blob",
+            arguments: [transactionBlock.pure(new TextEncoder().encode(address))],
+          });
+          return Promise.resolve();
+        },
+        address
+      );
       const avatarUrl = new TextEncoder().encode(data.avatar);
 
       const tx = new Transaction();
@@ -111,7 +121,7 @@ export default function Profile() {
             arguments: [
               entry,
               tx.pure(new TextEncoder().encode(key)),
-              tx.pure(value),
+              tx.pure(new Uint8Array([value as number])),
             ],
           });
           return entry;
@@ -151,7 +161,12 @@ export default function Profile() {
       signAndExecute(
         {
           transaction: tx,
-          account: { address }
+          account: {
+            address,
+            publicKey: new Uint8Array(),
+            chains: [],
+            features: []
+          }
         },
         {
           onSuccess: (result) => {
@@ -167,10 +182,14 @@ export default function Profile() {
         }
       );
     } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unknown error occurred';
+      
       toast({
         variant: "destructive",
         title: "Error",
-        description: `Failed to ${existingProfile ? 'update' : 'create'} profile: ${error.message}`,
+        description: `Failed to ${existingProfile ? 'update' : 'create'} profile: ${errorMessage}`,
       });
     }
   };
@@ -269,11 +288,11 @@ export default function Profile() {
                   <Input
                     placeholder="e.g., JavaScript:80, Rust:70"
                     onChange={(e) => {
-                      const skills = e.target.value.split(',').reduce((acc, pair) => {
+                      const skills = e.target.value.split(',').reduce((acc: Record<string, number>, pair) => {
                         const [key, value] = pair.split(':').map(s => s.trim());
                         acc[key] = parseInt(value);
                         return acc;
-                      }, {});
+                      }, {} as Record<string, number>);
                       field.onChange(skills);
                     }}
                   />
