@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Wallet, Brain, Building2, Trophy, Users, Blocks, Code, UserCheck, Sparkles, GraduationCap, Shield } from "lucide-react";
 // import { motion } from "framer-motion";
 import { motion } from 'motion/react';
-import AuthServices from '@/components/auth/AuthServices'; // Add this import
+import AuthServices from '@/components/auth/AuthServices';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -12,7 +12,6 @@ const fadeIn = {
 };
 
 export default function Home() {
-  // Check if user is authenticated
   const isAuthenticated = AuthServices.isAuthenticated();
 
   return (
@@ -44,31 +43,28 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/jobs">
+              <Link to={isAuthenticated ? "/dashboard" : "/jobs"}>
                 <Button size="lg" className="w-full sm:w-auto gap-2 text-lg h-12">
-                  Explore Jobs
+                  {isAuthenticated ? "Go to Dashboard" : "Explore Jobs"}
                   <ArrowRight size={20} />
                 </Button>
               </Link>
 
-              {/* Conditionally render the Connect Wallet button */}
-              {!isAuthenticated && (
-                <Link to="/login">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
-                    <Wallet size={20} />
-                    Connect Wallet
-                  </Button>
-                </Link>
-              )}
-
-              {/* Optionally show a dashboard button for authenticated users */}
-              {isAuthenticated && (
-                <Link to="/dashboard">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
+              <Link to={isAuthenticated ? "/profile" : "/login"}>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-lg h-12">
+                  {isAuthenticated ? (
+                    <>
+                      <User size={20} />
+                      Your Profile
+                    </>
+                  ) : (
+                    <>
+                      <Wallet size={20} />
+                      Connect Wallet
+                    </>
+                  )}
+                </Button>
+              </Link>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
@@ -306,32 +302,23 @@ export default function Home() {
             viewport={{ once: true }}
             variants={fadeIn}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Your Web3 Journey?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              {isAuthenticated ? "Continue Your Web3 Journey" : "Ready to Start Your Web3 Journey?"}
+            </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of professionals building the future of the decentralized web.
+              {isAuthenticated 
+                ? "Access your dashboard to manage your applications and listings."
+                : "Join thousands of professionals building the future of the decentralized web."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {/* Only show Sign Up button if not authenticated */}
-              {!isAuthenticated && (
-                <Link to={'/login'}>
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Sign Up Now
-                  </Button>
-                </Link>
-              )}
-              
-              {/* Show a different button for authenticated users */}
-              {isAuthenticated && (
-                <Link to={'/dashboard'}>
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-              )}
-              
-              <Link to={'/learn-more'}>
+              <Link to={isAuthenticated ? '/dashboard' : '/login'}>
+                <Button size="lg" className="w-full sm:w-auto">
+                  {isAuthenticated ? "Dashboard" : "Sign Up Now"}
+                </Button>
+              </Link>
+              <Link to={isAuthenticated ? '/profile' : '/learn-more'}>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  Learn More
+                  {isAuthenticated ? "View Profile" : "Learn More"}
                 </Button>
               </Link>
             </div>
