@@ -29,7 +29,7 @@ function WalletBalance() {
 
     useEffect(() => {
         if (connectionStatus === 'connected' && currentWallet) {
-            const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
+            const client = new SuiClient({ url: getFullnodeUrl('testnet') }); // CHANGED 'mainnet' to 'testnet'
             const address = currentWallet.accounts[0].address;
             client.getBalance({ owner: address }).then((balance: { totalBalance: string }) => {
                 setBalance(balance.totalBalance);
