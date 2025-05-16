@@ -45,25 +45,30 @@ export default function Navigation() {
               </Button>
             </Link>
 
-            <Link to="/profile">
-              <Button
-                variant={location.pathname === "/profile" ? "default" : "ghost"}
-                className="gap-2"
-              >
-                <User size={20} />
-                Profile
-              </Button>
-            </Link>
+            {/* Only show Profile and Dashboard when authenticated */}
+            {isAuthenticated && (
+              <>
+                <Link to="/profile">
+                  <Button
+                    variant={location.pathname === "/profile" ? "default" : "ghost"}
+                    className="gap-2"
+                  >
+                    <User size={20} />
+                    Profile
+                  </Button>
+                </Link>
 
-            <Link to="/dashboard">
-              <Button
-                variant={location.pathname === "/dashboard" ? "default" : "ghost"}
-                className="gap-2"
-              >
-                <LayoutDashboard size={20} />
-                Dashboard
-              </Button>
-            </Link>
+                <Link to="/dashboard">
+                  <Button
+                    variant={location.pathname === "/dashboard" ? "default" : "ghost"}
+                    className="gap-2"
+                  >
+                    <LayoutDashboard size={20} />
+                    Dashboard
+                  </Button>
+                </Link>
+              </>
+            )}
 
             <WalletBalance />
           </div>
