@@ -21,10 +21,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider
-        networks={{ mainnet: { url: getFullnodeUrl('mainnet') } }}
-        defaultNetwork="mainnet"
+        networks={{ testnet: { url: getFullnodeUrl('testnet') } }}
+        defaultNetwork="testnet"
       >
-        <WalletProvider >
+        <WalletProvider>
           <Router>
             <div className="min-h-screen bg-background">
               <Navigation />
