@@ -20,10 +20,8 @@ import '@mysten/dapp-kit/dist/index.css';
 import JobsCreate from './pages/JobsCreate';
 
 function App() {
-  // Define any required state before using providers
   const [initialized, setInitialized] = React.useState(true);
 
-  // Ensure network is properly configured
   return (
     <QueryClientProvider client={queryClient}>
       {initialized && (
@@ -33,42 +31,34 @@ function App() {
         >
           <WalletProvider>
             <Router>
-              <div className="min-h-screen bg-background">
-                <Navigation />
-                <main className="container mx-auto px-4 py-8">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/jobs" element={<Jobs />} />
-                    <Route
-                      path="/profile"
-                      element={
-                        <PrivateRoute>
-                          <Profile />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <PrivateRoute>
-                          <Dashboard />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/jobs/create"
-                      element={
-                        <PrivateRoute>
-                          <JobsCreate />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-              </div>
+              <Navigation />
+              <main className="container mx-auto p-4 mt-6 mb-20">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/jobs" element={<Jobs />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  
+                  {/* Protected routes */}
+                  <Route path="/profile" element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  } />
+                  <Route path="/dashboard" element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  } />
+                  <Route path="/jobs/create" element={
+                    <PrivateRoute>
+                      <JobsCreate />
+                    </PrivateRoute>
+                  } />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
             </Router>
           </WalletProvider>
         </SuiClientProvider>
