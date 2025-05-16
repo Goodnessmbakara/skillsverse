@@ -68,25 +68,30 @@ export default function Profile() {
         const profile = objects.data[0].data.content.fields as any;
         setExistingProfile({
           id: objects.data[0].data?.objectId,
-          name: Buffer.from(profile.name).toString(),
-          bio_url: Buffer.from(profile.bio_url).toString(),
-          avatar_url: Buffer.from(profile.avatar_url).toString(),
-          skills: profile.skills.fields.contents.reduce((acc: Record<string, number>, item: any) => {
-            acc[Buffer.from(item.fields.key).toString()] = item.fields.value;
+          name: profile.name ? Buffer.from(profile.name).toString() : '',
+          bio_url: profile.bio_url ? Buffer.from(profile.bio_url).toString() : '',
+          avatar_url: profile.avatar_url ? Buffer.from(profile.avatar_url).toString() : '',
+          skills: profile.skills?.fields?.contents ? profile.skills.fields.contents.reduce((acc: Record<string, number>, item: any) => {
+            if (item?.fields?.key) {
+              acc[Buffer.from(item.fields.key).toString()] = item.fields.value || 0;
+            }
             return acc;
-          }, {}),
-          reputation: parseInt(profile.reputation),
-          type: Buffer.from(profile.type).toString(),
+          }, {}) : {},
+          reputation: profile.reputation ? parseInt(profile.reputation) : 0,
+          type: profile.type ? Buffer.from(profile.type).toString() : 'candidate',
         });
+        
         form.reset({
-          name: Buffer.from(profile.name).toString(),
-          bio: "", // Bio fetched from Walrus separately if needed
-          avatar: Buffer.from(profile.avatar_url).toString(),
-          type: Buffer.from(profile.type).toString() as "candidate" | "employer",
-          skills: profile.skills.fields.contents.reduce((acc: Record<string, number>, item: any) => {
-            acc[Buffer.from(item.fields.key).toString()] = item.fields.value;
+          name: profile.name ? Buffer.from(profile.name).toString() : '',
+          bio: "", 
+          avatar: profile.avatar_url ? Buffer.from(profile.avatar_url).toString() : AVATAR_OPTIONS[0],
+          type: profile.type ? Buffer.from(profile.type).toString() as "candidate" | "employer" : "candidate",
+          skills: profile.skills?.fields?.contents ? profile.skills.fields.contents.reduce((acc: Record<string, number>, item: any) => {
+            if (item?.fields?.key) {
+              acc[Buffer.from(item.fields.key).toString()] = item.fields.value || 0;
+            }
             return acc;
-          }, {}),
+          }, {}) : {},
         });
       }
     };
