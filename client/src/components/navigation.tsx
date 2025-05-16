@@ -1,7 +1,7 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Briefcase, User, LayoutDashboard, LogIn, LogOut } from "lucide-react";
-import { ConnectModal, useCurrentWallet } from '@mysten/dapp-kit';
+import { Briefcase, User, LayoutDashboard } from "lucide-react";
+import { ConnectButton, useCurrentWallet } from '@mysten/dapp-kit';
 import WalletManager from './auth/WalletManager';
 import AuthServices from './auth/AuthServices';
 import WalletBalance from './WalletBalance';
@@ -10,8 +10,7 @@ import Logo from '@/assets/generated-icon.png';
 
 export default function Navigation() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isConnected, currentWallet, connect } = useCurrentWallet();
+  const { isConnected, currentWallet } = useCurrentWallet(); // Remove 'connect' here
   const isAuthenticated = AuthServices.isAuthenticated();
 
   // Handle wallet connection
