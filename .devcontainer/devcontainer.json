@@ -1,14 +1,21 @@
 {
-    "name": "Sui Skillsverse",
-    "image": "mysten/sui-tools:a2e4f5d2cf17ddca99c118f0dc80e7e20994d4d2",
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/workspace,type=bind"
-    ],
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "move.move-analyzer"
-            ]
-        }
+  "name": "Sui CLI Dev Container",
+  "image": "mysten/sui-tools:a2e4f5d2cf17ddca99c118f0dc80e7e20994d4d2d2",
+  "workspaceFolder": "/sui-project",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/sui-project,type=bind,consistency=cached"
+  ],
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "postCreateCommand": "sui --version",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "rust-lang.rust-analyzer",
+        "ms-azuretools.vscode-docker"
+      ]
     }
+  }
 }
