@@ -32,5 +32,72 @@ The Credential Verification Contract provides a secure and transparent way to ve
 
 1. **Compile the contract**:
    ```bash
-   cd ~/Projects/skillsverse/contracts
-   sui move build
+      cd ~/Projects/skillsverse/contracts
+      sui move build
+      ```
+
+   2. **Publish the contract**:
+      ```bash
+      sui client publish --gas-budget 10000000
+      ```
+
+   3. **Initialize the contract**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function initialize --args <ADMIN_CAP_ID> --gas-budget 1000000
+      ```
+
+   ### Configuration
+
+   1. **Register verifiers**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function add_verifier --args <ADMIN_CAP> <VERIFIER_ADDRESS> --gas-budget 1000000
+      ```
+
+   2. **Set minimum votes required**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function set_min_votes --args <ADMIN_CAP> <MIN_VOTES> --gas-budget 1000000
+      ```
+
+   ## Usage
+
+   ### For Users
+
+   1. **Submit a credential**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function submit_credential --args <IPFS_HASH> <ISSUER_NAME> <ISSUE_DATE> --gas-budget 1000000
+      ```
+
+   2. **Check credential status**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function check_credential --args <CREDENTIAL_ID> --gas-budget 1000000
+      ```
+
+   ### For Verifiers
+
+   1. **Vote on credential**:
+      ```bash
+      sui client call --package <PACKAGE_ID> --module credential_verification --function vote_credential --args <VERIFIER_CAP> <CREDENTIAL_ID> <VOTE_BOOL> --gas-budget 1000000
+      ```
+
+   ## Testing
+
+   Run the test suite with:
+   ```bash
+   sui move test
+   ```
+
+   ## Integration
+
+   Frontend applications can listen for events:
+   - `CredentialSubmitted`
+   - `CredentialVerified`
+   - `VerifierAdded`
+   - `VerifierRemoved`
+
+   ## License
+
+   This project is licensed under the MIT License - see the LICENSE file for details.
+
+   ## Contributing
+
+   Contributions are welcome! Please feel free to submit a Pull Request.
